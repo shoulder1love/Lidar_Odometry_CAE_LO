@@ -69,11 +69,13 @@ def BatchVoxelization(fileList, iThread, flags4MultiProc):
 def Porcess():
     manager = Manager()
     
-    for iSequence in range(0,6,1):
+    for iSequence in range(0,1,1):
         strSequence=str(iSequence).zfill(2)
         dirSequence=os.path.join(strDataBaseDir, strSequence)
         rawDataList=GetFileList(dirSequence)
+        
         rawDataList = [oneFile for oneFile in rawDataList if oneFile[(len(oneFile)-3):len(oneFile)]=='bin']
+        print(rawDataList)
                 
         flags4MultiProc = manager.list([])
         nThreads = 6

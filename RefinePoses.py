@@ -536,7 +536,7 @@ AllErrorTs = np.zeros((1,1), dtype=np.float32)
 
 #   0, 2     2, 5     5, 8    8, 11    11, 14    14, 18     18, 20     20, 22
 # prepare data path
-for iSequence in range(1, 2, 1):
+for iSequence in range(0, 1, 1):
     strSequence = str(iSequence).zfill(2)
     RawDataDir = os.path.join(strDataBaseDir, strSequence, 'velodyne')+'/'
     KeyPtsDir = os.path.join(strDataBaseDir, strSequence, 'KeyPts')+'/'

@@ -31,15 +31,15 @@ Channels4AE = [0,1,2]
 
 
 # Velodyne64
-nLines = 16
-AzimuthResolution = 0.20 # 0.60 # degree
+nLines = 32
+AzimuthResolution = 0.20 # degree
 VerticalViewDown = -24.8
 VerticalViewUp = 2.0
 VisibleBottom = 10  # for filering out near interest points
 VisibleRange = 100  # manually set (m)
-SafeEdgeWidth4Top = 5 # 5
+SafeEdgeWidth4Top = 5
 CropWidth_SphericalRing = 8
-Size4FilterTopEdge = 2
+Size4FilterTopEdge = 8
 
 
 
@@ -72,10 +72,8 @@ AllPixelIndexes_WithoutWindowEdge = np.array(AllPixelIndexes_WithoutWindowEdge, 
 def ProjectPC2SphericalRing(PC):
     assert PC.shape[0] > 3 and PC.shape[1] == 4 
     Image_float = np.zeros((ImgH, ImgW, NumChannels), dtype=np.float32)
-    Image_float = np.zeros((69, ImgW, NumChannels), dtype=np.float32)
-    # print(ImgH, ImgW)
+    print(ImgH, ImgW)
     GridCounter = np.zeros((ImgH,ImgW),dtype=np.int32)
-    GridCounter = np.zeros((69,ImgW),dtype=np.int32)
     
     rs = LA.norm(PC[:,0:3], axis=1)
     if min(rs) == 0:
@@ -88,11 +86,11 @@ def ProjectPC2SphericalRing(PC):
         r = rs[iPt]
         iCol = int((math.pi - math.atan2(y,x)) / AzimuthResolution)     # alpha
         beta = math.asin(z/r)                
-        # print("iCol: ", iCol)
-        # print("beta :",beta)                           # beta
+        print("iCol: ", iCol)
+        print("beta :",beta)                           # beta
         iRow = ImgH - int(beta / VerticalResolution + VerticalPixelsOffset)
         if iRow < 0 or iRow >= ImgH or iCol>=ImgW or iCol <0:
-            # print("###################")
+            print("###################")
             continue
      
         Image_float[iRow, iCol, 0:4] = PC[iPt, 0:4]
@@ -205,11 +203,9 @@ def GetKeyPtsByAE(SphericalRing, GridCounter, RespondImg):
     
     
     distances = LA.norm(SphericalRing[0:nLines,0:ImgW-CropWidth_SphericalRing], axis=-1)
-    distances = LA.norm(SphericalRing[0:64,0:ImgW-CropWidth_SphericalRing], axis=-1)
     distanceMask = cp.array(distances >= VisibleBottom, dtype=cp.int32)    
     MinDiffMap_Mask = cp.array(MinDiffMap_ > NormDiffThreshold, dtype=cp.int32)
     finalMask = distanceMask*MinDiffMap_Mask
-    print("finalMask", finalMask)
     
     candidates_indices_2D = np.unravel_index(cp.asnumpy(candidates_indices), MinDiffMap_.shape)
     finalMask_1D = cp.array(finalMask[candidates_indices_2D], dtype=cp.bool)
@@ -337,7 +333,6 @@ def ExtendKeyPtsInShpericalRing(SphericalRing, GridCounter, KeyPixels):
 def ProjectPC2RangeImage(PC):
     assert PC.shape[0] > 3 and PC.shape[1] == 3    
     Image_float = np.zeros((ImgH,ImgW),dtype=np.float32)
-    Image_float = np.zeros((64,ImgW),dtype=np.float32)
     for iPt in range(PC.shape[0]):
         x = PC[iPt,0]
         y = PC[iPt,1]

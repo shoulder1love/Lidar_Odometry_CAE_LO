@@ -96,14 +96,18 @@ def GetAllRespondImgs(strSequence, subFrames, RespondLayer):
     
     # get all spherical rings and grid counters
     SphericalRings = np.zeros((nFrames, nLines, ImgW-CropWidth_SphericalRing, len(Channels4AE)), dtype=np.float32)
-    GridCounters = np.zeros((nFrames, ImgH, ImgW), dtype=np.int8)    
+    SphericalRings = np.zeros((nFrames, 64, ImgW-CropWidth_SphericalRing, len(Channels4AE)), dtype=np.float32)
+
+    GridCounters = np.zeros((nFrames, ImgH, ImgW), dtype=np.int8)  
+    GridCounters = np.zeros((nFrames, 69, ImgW), dtype=np.int8)   
     for iData in range(nFrames):
         fileName = str(subFrames[iData]).zfill(6) + '.bin.mat'
         fileFullPath = os.path.join(SphericalRingDir, fileName)
         mat = io.loadmat(fileFullPath)
         SphericalRing = mat['SphericalRing']
         GridCounter = mat['GridCounter']        
-        SphericalRings[iData,:,:,:] = np.array(SphericalRing[0:nLines, 0:ImgW-CropWidth_SphericalRing, Channels4AE], dtype=np.float32)
+        # SphericalRings[iData,:,:,:] = np.array(SphericalRing[0:nLines, 0:ImgW-CropWidth_SphericalRing, Channels4AE], dtype=np.float32)
+        SphericalRings[iData,:,:,:] = np.array(SphericalRing[0:64, 0:ImgW-CropWidth_SphericalRing, Channels4AE], dtype=np.float32)
         GridCounters[iData,:,:] = GridCounter
     print('finished loading data, predicting...')
     
@@ -137,7 +141,8 @@ def BatchGetKeyPts(strSequence, FrameList, SphericalRings, GridCounters, Respond
         KeyPts, KeyPixels, PlanarPts = GetKeyPtsByAE(SphericalRing, GridCounter, RespondImg)
         
         # extend key points for the final pose refine
-        ExtendedKeyPts = ExtendKeyPtsInShpericalRing(SphericalRing, GridCounter, KeyPixels)        
+        # ExtendedKeyPts = ExtendKeyPtsInShpericalRing(SphericalRing, GridCounter, KeyPixels)  
+        ExtendedKeyPts = 0      
         
         # save key points
         keyPtDir = os.path.join(strDataBaseDir, strSequence, KeyPtFolderName)      
@@ -168,7 +173,7 @@ def BatchPorcess(iOption):
         from keras.models import load_model
         RespondLayer = load_model(strRespondNetModelPath)
     
-    for iSequence in range(0, 6, 1):
+    for iSequence in range(0, 1, 1):
         strSequence=str(iSequence).zfill(2)
         dirSequence=os.path.join(strDataBaseDir, strSequence)
         rawDataList = GetFileList(dirSequence)
@@ -240,19 +245,26 @@ if __name__ == "__main__":
     
     # BatchPorcess(2)
 
-    
-    # '''
-    
+
+ 
     #----------------(for test at first) Visualization of Voxelmodel---------------------------------------------
         
-    PC = np.fromfile(strDataBaseDir + '/50/velodyne/000000.bin', dtype=np.float32, count=-1)
+    PC = np.fromfile(strDataBaseDir + '/00/velodyne/000209.bin', dtype=np.float32, count=-1)
+    # PC = np.fromfile('/home/zhang/workspace/CAE-LO/KITTI_odometry_ori/velodyne/sequences/00/velodyne/000400.bin', dtype=np.float32, count=-1)
     PC = PC.reshape([-1,4])
     # print(PC.shape)
-    
+
     t0=time()
     
     SphericalRing, GridCounter = ProjectPC2SphericalRing(PC)
-    RangeImage = ProjectPC2RangeImage(PC[:,0:3])
+    print(" SphericalRing* shape step1", SphericalRing.shape[0], SphericalRing.shape[1], SphericalRing.shape[2])
+    # SphericalRing* shape 69 1800 5 -> DCAITI (64)
+    # SphericalRing* shape 69 1800 5 -> KITTI
+    # SphericalRing* shape 21 1800 5 -> DCAITI (16)
+
+    RangeImage = ProjectPC2RangeImage(PC[:,0:3]) 
+    # RangeImage 69 1800 -> DCAITI
+    # RangeImage 69 1800 -> KITTI
     t1=time()
     print(round(t1-t0, 2), 's')
     
@@ -264,10 +276,17 @@ if __name__ == "__main__":
     
     
     # prediction
+    cover = nLines+4
     SphericalRing_ = SphericalRing[0:nLines, 0:ImgW-CropWidth_SphericalRing, Channels4AE]
+    SphericalRing_ = SphericalRing[0:64, 0:ImgW-CropWidth_SphericalRing, Channels4AE]
+    print(" SphericalRing_ shape", SphericalRing_.shape[0], SphericalRing_.shape[1], SphericalRing_.shape[2])
+    #  SphericalRing_ shape 64(16) 1792 3 -> DCAITI
+    #  SphericalRing_ shape 64(16) 1792 3 -> KITTI
     SphericalRing_ = SphericalRing_.reshape(1, SphericalRing_.shape[0], SphericalRing_.shape[1], SphericalRing_.shape[2])
     print("-----------------------------------------")
     print("SphericalRing shape and type", SphericalRing_.shape, type(SphericalRing_))
+    # SphericalRing shape and type (1, 64, 1792, 3) -> DCAITI
+    # SphericalRing shape and type (1, 64, 1792, 3) -> KITTI
     RespondImg = RespondLayer.predict(SphericalRing_)
     RespondImg = RespondImg.reshape(RespondImg.shape[1],RespondImg.shape[2],RespondImg.shape[3])
     print("-----------------------------------------")
@@ -349,10 +368,11 @@ if __name__ == "__main__":
     
        
     mlab.show()
-    # '''
+    
   
     
-    
+    # SphericalRing shape and type (1, 64, 1792, 3) <class 'numpy.ndarray'>
+ 
      
 
 

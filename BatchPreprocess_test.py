@@ -168,7 +168,7 @@ def BatchPorcess(iOption):
         from keras.models import load_model
         RespondLayer = load_model(strRespondNetModelPath)
     
-    for iSequence in range(0, 1, 1):
+    for iSequence in range(0, 6, 1):
         strSequence=str(iSequence).zfill(2)
         dirSequence=os.path.join(strDataBaseDir, strSequence)
         rawDataList = GetFileList(dirSequence)
@@ -232,20 +232,22 @@ def BatchPorcess(iOption):
 
 
 if __name__ == "__main__":
-    freeze_support()
+    # freeze_support()
     
     # for cupy multi-thread processing
-    import multiprocessing as mp
-    mp.set_start_method('spawn')
+    # import multiprocessing as mp
+    # mp.set_start_method('spawn')
     
-    BatchPorcess(1)
+    # BatchPorcess(1)
 
     
-    '''
+
     
     #----------------(for test at first) Visualization of Voxelmodel---------------------------------------------
         
-    PC = np.fromfile(strDataBaseDir + '/00/velodyne/000000.bin', dtype=np.float32, count=-1)
+    # PC = np.fromfile(strDataBaseDir + '/home/zhang/workspace/CAE-LO/ROS2_node/ws_c/data1/000100.bin', dtype=np.float32, count=-1)
+    # PC = np.fromfile('/home/zhang/workspace/CAE-LO/ROS2_node/ws_c/data1/000100.bin', dtype=np.float32, count=-1)
+    PC = np.fromfile('/home/zhang/workspace/CAE-LO/test0004/000010.bin', dtype=np.float32, count=-1)
     PC = PC.reshape([-1,4])
     t0=time()
     
@@ -338,7 +340,7 @@ if __name__ == "__main__":
     
        
     mlab.show()
-    '''
+
   
     
     

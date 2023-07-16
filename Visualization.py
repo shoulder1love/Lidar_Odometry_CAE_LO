@@ -23,9 +23,9 @@ def ShowTrajactory(fig, poses, color, ptSize):
     
     colors = np.ones((Ts.shape[0],),dtype=np.float32)*color
     if ptSize == 0:
-        node = mlab.points3d(Ts[:,0], Ts[:,1], Ts[:,2], mode="point", figure=fig)
+        node = mlab.points3d(Ts[:,0], Ts[:,1], Ts[:,2],  color=(0, 1, 1),mode="point", figure=fig)
     else:        
-        node = mlab.points3d(Ts[:,0], Ts[:,1], Ts[:,2], scale_factor=ptSize, figure=fig)
+        node = mlab.points3d(Ts[:,0], Ts[:,1], Ts[:,2],  color=(0, 1, 0),scale_factor=ptSize, figure=fig)
     node.glyph.scale_mode = 'scale_by_vector'
     node.mlab_source.dataset.point_data.scalars = colors
     
